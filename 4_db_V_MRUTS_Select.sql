@@ -20,7 +20,9 @@ ON c.CategoryID = p.CategoryID; ---Join для того, щоб показати лише категорії, з
 SELECT p.ProductName, p.RetailPrice, c.CategoryDescription
 FROM Products AS p
 INNER JOIN Categories AS c
-ON p.CategoryID = c.CategoryID; ---щодо умови «котрі ми перевозимо» - в базі даних немає колонки в якій міститься тип перевезення ми цю умову опускаємо
+ON p.CategoryID = c.CategoryID
+INNER JOIN Product_Vendors AS pv
+ON pv.ProductNumber = p.ProductNumber; 
 
 ---[5]------
 SELECT VendName
@@ -42,7 +44,9 @@ FROM Customers;
 
 ---[9]------
 SELECT ProductName, RetailPrice
-FROM Products;
+FROM Products AS p
+INNER JOIN Order_Details AS od
+ON od.ProductNumber = p.ProductNumber;
 
 ---[10]------
 SELECT *
@@ -50,11 +54,14 @@ FROM Employees;
 
 ---[11]------
 SELECT DISTINCT VendCity, VendName
-FROM Vendors
+FROM Vendors AS v
+INNER JOIN Product_Vendors AS pv
+ON pv.VendorID = v.VendorID
 ORDER BY VendCity; ---Запит працює коректно, поки в одному місті працює лише один вендор
 
 ---[12]------
 SELECT od.OrderNumber, MAX(pv.DaysToDeliver) AS DaysToDeliver
+INTO order_max --- for 14 
 FROM Order_Details AS od
 INNER JOIN Product_Vendors AS pv
 ON od.ProductNumber = pv.ProductNumber
@@ -66,8 +73,10 @@ SELECT ProductName, (QuantityOnHand * RetailPrice) As TotalPrice
 FROM Products
 
 ---[14]------
-SELECT OrderNumber, (DATEDIFF(DD, OrderDate, ShipDate)) AS DaysToShip
-FROM Orders
+SELECT o.OrderNumber, (CAST((DATEDIFF(DD, OrderDate, ShipDate)) AS int) + CAST(om.DaysToDeliver AS int)) AS DaysToShip
+FROM Orders AS o
+INNER JOIN order_max AS om
+ON o.OrderNumber = om.OrderNumber
 
 ---------
 
